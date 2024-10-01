@@ -15,6 +15,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { MealsService } from '../meals/meals.service';
 import { CreateMealDto } from '../meals/dto/create-meal.dto';
+import { UpdateMealDto } from '../meals/dto/update-meal.dto';
 
 @Controller('users')
 export class UsersController {
@@ -73,5 +74,21 @@ export class UsersController {
   async createMeal(@Body() createMealDto: CreateMealDto, @Request() req) {
     const meal = await this.mealsService.create(createMealDto, req.user.sub);
     return { message: 'Meal created sucessfully', meal };
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('meals/:id')
+  async removeMeal(@Param('id') id: string, @Request() req) {
+    return this.mealsService.remove(id, req.user.sub);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('meals/:id')
+  async updateMeal(
+    @Param('id') id: string,
+    @Body() updateMealDto: UpdateMealDto,
+    @Request() req,
+  ) {
+    return this.mealsService.update(id, req.user.sub, updateMealDto);
   }
 }

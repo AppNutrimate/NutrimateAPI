@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMealDto } from './dto/create-meal.dto';
-// import { UpdateMealDto } from './dto/update-meal.dto';
+import { UpdateMealDto } from './dto/update-meal.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Meal } from './entities/meal.entity';
 import { Repository } from 'typeorm';
@@ -32,24 +32,36 @@ export class MealsService {
   }
 
   async findAll(userId: string) {
-    const user = await this.usersRepository.findOneBy({ id: userId });
-    return this.mealsRepository.find({ where: { user } });
+    return this.mealsRepository.find({ where: { user: { id: userId } } });
   }
 
   async findOne(id: string, userId: string) {
-    const user = await this.usersRepository.findOneBy({ id: userId });
-    const meal = await this.mealsRepository.findOne({ where: { id, user } });
+    const meal = await this.mealsRepository.findOne({
+      where: { id, user: { id: userId } },
+    });
     if (!meal) {
       throw new NotFoundException('Meal not found');
     }
     return meal;
   }
 
-  // update(id: number, updateMealDto: UpdateMealDto) {
-  //   return `This action updates a #${id} meal`;
-  // }
+  async update(id: string, userId: string, updateMealDto: UpdateMealDto) {
+    const meal = await this.mealsRepository.findOne({
+      where: { id, user: { id: userId } },
+    });
+    if (!meal) {
+      throw new NotFoundException('Meal not found');
+    }
+    return this.mealsRepository.save({ ...meal, ...updateMealDto });
+  }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} meal`;
-  // }
+  async remove(id: string, userId: string) {
+    const meal = await this.mealsRepository.findOne({
+      where: { id, user: { id: userId } },
+    });
+    if (!meal) {
+      throw new NotFoundException('Meal not found');
+    }
+    return this.mealsRepository.delete({ id, user: { id: userId } });
+  }
 }
