@@ -31,6 +31,13 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard)
+  @Post('meals')
+  async createMeal(@Body() createMealDto: CreateMealDto, @Request() req) {
+    const meal = await this.mealsService.create(createMealDto, req.user.sub);
+    return { message: 'Meal created sucessfully', meal };
+  }
+
+  @UseGuards(AuthGuard)
   @Get()
   async findAll() {
     const users = await this.usersService.findAll();
@@ -59,27 +66,8 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
-  }
-
-  @UseGuards(AuthGuard)
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
-  }
-
-  @UseGuards(AuthGuard)
-  @Post('meals')
-  async createMeal(@Body() createMealDto: CreateMealDto, @Request() req) {
-    const meal = await this.mealsService.create(createMealDto, req.user.sub);
-    return { message: 'Meal created sucessfully', meal };
-  }
-
-  @UseGuards(AuthGuard)
-  @Delete('meals/:id')
-  async removeMeal(@Param('id') id: string, @Request() req) {
-    return this.mealsService.remove(id, req.user.sub);
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return await this.usersService.update(id, updateUserDto);
   }
 
   @UseGuards(AuthGuard)
@@ -89,6 +77,18 @@ export class UsersController {
     @Body() updateMealDto: UpdateMealDto,
     @Request() req,
   ) {
-    return this.mealsService.update(id, req.user.sub, updateMealDto);
+    return await this.mealsService.update(id, req.user.sub, updateMealDto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('meals/:id')
+  async removeMeal(@Param('id') id: string, @Request() req) {
+    return this.mealsService.remove(id, req.user.sub);
   }
 }

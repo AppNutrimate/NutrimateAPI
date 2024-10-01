@@ -13,21 +13,29 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
     const user = this.usersRepository.create(createUserDto);
-    return this.usersRepository.save(user);
+    return await this.usersRepository.save(user);
   }
 
-  findAll() {
-    return this.usersRepository.find();
+  async findAll() {
+    return await this.usersRepository.find();
   }
 
-  findOne(id: string) {
-    return this.usersRepository.findOne({ where: { id } });
+  async findOne(id: string) {
+    try {
+      return await this.usersRepository.findOneOrFail({ where: { id } });
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
-  findByEmail(email: string) {
-    return this.usersRepository.findOne({ where: { email } });
+  async findByEmail(email: string) {
+    try {
+      return await this.usersRepository.findOneOrFail({ where: { email } });
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
@@ -47,11 +55,7 @@ export class UsersService {
   }
 
   async remove(id: string) {
-    const user = await this.usersRepository.findOne({ where: { id } });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
+    const user = await this.findOne(id);
     await this.usersRepository.remove(user);
   }
 }
