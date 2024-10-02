@@ -26,4 +26,8 @@ export class Meal {
   @ManyToMany(() => Recipe)
   @JoinTable({ name: 'meal_recipe' })
   recipes: Recipe[];
+
+  constructor(partial: Partial<Meal>) {
+    Object.assign(this, partial);
+  }
 }

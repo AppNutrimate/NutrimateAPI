@@ -16,52 +16,46 @@ export class MealsService {
   ) {}
 
   async create(createMealDto: CreateMealDto, userId: string) {
-    const { name, icon } = createMealDto;
+    // TODO change to use user service
+    try {
+      const { name, icon } = createMealDto;
+      const user = await this.usersRepository.findOneOrFail({
+        where: { id: userId },
+      });
 
-    const user = await this.usersRepository.findOneBy({ id: userId });
-    if (!user) {
-      throw new Error('User not found');
+      const meal = this.mealsRepository.create({
+        name,
+        icon,
+        user,
+      });
+      return await this.mealsRepository.save(meal);
+    } catch (error) {
+      throw new NotFoundException(error.message);
     }
-
-    const meal = this.mealsRepository.create({
-      name,
-      icon,
-      user,
-    });
-    return this.mealsRepository.save(meal);
   }
 
   async findAll(userId: string) {
-    return this.mealsRepository.find({ where: { user: { id: userId } } });
+    return await this.mealsRepository.find({ where: { user: { id: userId } } });
   }
 
   async findOne(id: string, userId: string) {
-    const meal = await this.mealsRepository.findOne({
-      where: { id, user: { id: userId } },
-    });
-    if (!meal) {
-      throw new NotFoundException('Meal not found');
+    try {
+      const meal = await this.mealsRepository.findOneOrFail({
+        where: { id, user: { id: userId } },
+      });
+      return meal;
+    } catch (error) {
+      throw new NotFoundException(error.message);
     }
-    return meal;
   }
 
   async update(id: string, userId: string, updateMealDto: UpdateMealDto) {
-    const meal = await this.mealsRepository.findOne({
-      where: { id, user: { id: userId } },
-    });
-    if (!meal) {
-      throw new NotFoundException('Meal not found');
-    }
-    return this.mealsRepository.save({ ...meal, ...updateMealDto });
+    const meal = await this.findOne(id, userId);
+    return await this.mealsRepository.save({ ...meal, ...updateMealDto });
   }
 
   async remove(id: string, userId: string) {
-    const meal = await this.mealsRepository.findOne({
-      where: { id, user: { id: userId } },
-    });
-    if (!meal) {
-      throw new NotFoundException('Meal not found');
-    }
-    return this.mealsRepository.delete({ id, user: { id: userId } });
+    const meal = await this.findOne(id, userId);
+    return await this.mealsRepository.remove(meal);
   }
 }
