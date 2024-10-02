@@ -310,7 +310,19 @@ describe('UsersController', () => {
       expect(result).toEqual(mockMeals[0]);
     });
 
-    //  TODO add test for error
+    it('should throw an error', () => {
+      // Arrange
+      jest.spyOn(mealsService, 'update').mockRejectedValueOnce(new Error());
+
+      // Act
+      const result = usersController.updateMeal(
+        mockMeals[0].id,
+        createMealDto,
+        { user: { sub: mockUsers[0].id } },
+      );
+      // Assert
+      expect(result).rejects.toThrow();
+    });
   });
 
   describe('remove', () => {
