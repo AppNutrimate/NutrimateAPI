@@ -24,4 +24,8 @@ export class CreateRecipeDto {
 
   @IsNumberString()
   prepTime: number;
+
+  constructor(partial: Partial<CreateRecipeDto>) {
+    Object.assign(this, partial);
+  }
 }
