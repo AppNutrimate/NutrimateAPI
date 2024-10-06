@@ -6,6 +6,8 @@ import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 import { CreateMealDto } from './dto/create-meal.dto';
 import { Repository } from 'typeorm';
+import { Recipe } from '../recipes/entities/recipe.entity';
+import { AddRecipeToMealDto } from '../users/dto/add-recipe-to-meal.dto';
 
 const createMealDto = new CreateMealDto({
   name: 'Test Meal',
@@ -36,6 +38,24 @@ const mockUser = new User({
   meals: [],
 });
 
+const mockRecipes = [
+  new Recipe({
+    id: '79fa8aed-d66f-4686-b158-e53775e6b2f4',
+    name: 'Spaghetti Carbonara',
+    description: 'A delicious pasta dish',
+    picture: 'spaghetti.jpg',
+    calories: 500,
+    proteins: 20,
+    carbos: 50,
+    fat: 25,
+    prepTime: 30,
+  }),
+];
+
+const addRecipeToMealDto = new AddRecipeToMealDto({
+  recipeId: mockRecipes[0].id,
+});
+
 describe('MealsService', () => {
   let mealsService: MealsService;
   let mealsRepository: Repository<Meal>;
@@ -62,6 +82,12 @@ describe('MealsService', () => {
           },
         },
         { provide: UsersService, useValue: {} },
+        {
+          provide: getRepositoryToken(Recipe),
+          useValue: {
+            findOneOrFail: jest.fn().mockResolvedValue(mockRecipes[0]),
+          },
+        },
       ],
     }).compile();
 
@@ -171,6 +197,38 @@ describe('MealsService', () => {
       jest.spyOn(mealsRepository, 'remove').mockRejectedValueOnce(new Error());
       // Act
       const result = mealsService.remove(mockMeals[0].id, mockUser.id);
+      // Assert
+      expect(result).rejects.toThrow();
+    });
+  });
+
+  describe('addRecipe', () => {
+    it('should add a recipe to a meal', async () => {
+      // Arrange
+      jest
+        .spyOn(mealsRepository, 'findOneOrFail')
+        .mockResolvedValueOnce({ ...mockMeals[0], recipes: [] });
+      // Act
+      const result = await mealsService.addRecipe(
+        mockMeals[0].id,
+        mockUser.id,
+        { recipeId: mockRecipes[0].id },
+      );
+      // Assert
+      expect(result).toEqual(mockMeals[0]);
+    });
+
+    it('should throw an error if meal is not found', async () => {
+      // Arrange
+      jest
+        .spyOn(mealsRepository, 'findOneOrFail')
+        .mockRejectedValueOnce(new Error());
+      // Act
+      const result = mealsService.addRecipe(
+        mockMeals[0].id,
+        mockUser.id,
+        addRecipeToMealDto,
+      );
       // Assert
       expect(result).rejects.toThrow();
     });
