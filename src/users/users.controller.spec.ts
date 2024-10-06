@@ -7,6 +7,8 @@ import { User } from './entities/user.entity';
 import { MealsService } from '../meals/meals.service';
 import { CreateMealDto } from '../meals/dto/create-meal.dto';
 import { Meal } from '../meals/entities/meal.entity';
+import { AddRecipeToMealDto } from './dto/add-recipe-to-meal.dto';
+import { Recipe } from '../recipes/entities/recipe.entity';
 
 const createUserDto = new CreateUserDto({
   firstName: 'John',
@@ -54,6 +56,24 @@ const mockMeals = [
   }),
 ];
 
+const mockRecipes = [
+  new Recipe({
+    id: '79fa8aed-d66f-4686-b158-e53775e6b2f4',
+    name: 'Spaghetti Carbonara',
+    description: 'A delicious pasta dish',
+    picture: 'spaghetti.jpg',
+    calories: 500,
+    proteins: 20,
+    carbos: 50,
+    fat: 25,
+    prepTime: 30,
+  }),
+];
+
+const addRecipeToMealDto = new AddRecipeToMealDto({
+  recipeId: mockRecipes[0].id,
+});
+
 describe('UsersController', () => {
   let usersController: UsersController;
   let usersService: UsersService;
@@ -81,6 +101,9 @@ describe('UsersController', () => {
             findOne: jest.fn().mockResolvedValue(mockMeals[0]),
             update: jest.fn().mockResolvedValue(mockMeals[0]),
             remove: jest.fn().mockResolvedValue(undefined),
+            addRecipe: jest
+              .fn()
+              .mockResolvedValue({ ...mockMeals[0], recipes: mockRecipes[0] }),
           },
         },
       ],
@@ -368,6 +391,40 @@ describe('UsersController', () => {
       // Act
       expect(
         usersController.removeMeal(mockMeals[0].id, mockUsers[0].id),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('addRecipeToMeal', () => {
+    it('should add a recipe to a meal', async () => {
+      // Act
+      const result = await usersController.addRecipeToMeal(
+        mockMeals[0].id,
+        addRecipeToMealDto,
+        {
+          user: { sub: mockUsers[0].id },
+        },
+      );
+
+      // Assert
+      expect(result).toEqual({ ...mockMeals[0], recipes: mockRecipes[0] });
+
+      expect(mealsService.addRecipe).toHaveBeenCalledWith(
+        mockMeals[0].id,
+        mockUsers[0].id,
+        addRecipeToMealDto,
+      );
+    });
+
+    it('should throw an error', async () => {
+      // Arrange
+      jest.spyOn(mealsService, 'addRecipe').mockRejectedValueOnce(new Error());
+
+      // Act
+      expect(
+        usersController.addRecipeToMeal(mockMeals[0].id, addRecipeToMealDto, {
+          user: { sub: mockUsers[0].id },
+        }),
       ).rejects.toThrow();
     });
   });

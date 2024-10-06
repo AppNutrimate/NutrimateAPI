@@ -16,6 +16,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { MealsService } from '../meals/meals.service';
 import { CreateMealDto } from '../meals/dto/create-meal.dto';
 import { UpdateMealDto } from '../meals/dto/update-meal.dto';
+import { AddRecipeToMealDto } from './dto/add-recipe-to-meal.dto';
 
 @Controller('users')
 export class UsersController {
@@ -90,5 +91,19 @@ export class UsersController {
   @Delete('meals/:id')
   async removeMeal(@Param('id') id: string, @Request() req) {
     return this.mealsService.remove(id, req.user.sub);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('meals/:mealId/recipe')
+  async addRecipeToMeal(
+    @Param('mealId') mealId: string,
+    @Body() addRecipeToMealDto: AddRecipeToMealDto,
+    @Request() req,
+  ) {
+    return this.mealsService.addRecipe(
+      mealId,
+      req.user.sub,
+      addRecipeToMealDto,
+    );
   }
 }
