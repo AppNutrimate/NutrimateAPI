@@ -17,7 +17,10 @@ import { MealsService } from '../meals/meals.service';
 import { CreateMealDto } from '../meals/dto/create-meal.dto';
 import { UpdateMealDto } from '../meals/dto/update-meal.dto';
 import { AddRecipeToMealDto } from './dto/add-recipe-to-meal.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('users')
+@ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   constructor(
