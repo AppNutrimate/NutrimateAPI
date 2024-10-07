@@ -46,6 +46,7 @@ export class MealsService {
     try {
       const meal = await this.mealsRepository.findOneOrFail({
         where: { id, user: { id: userId } },
+        relations: ['recipes'],
       });
       return meal;
     } catch (error) {
