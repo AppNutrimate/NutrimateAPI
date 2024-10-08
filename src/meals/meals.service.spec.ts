@@ -8,6 +8,7 @@ import { CreateMealDto } from './dto/create-meal.dto';
 import { Repository } from 'typeorm';
 import { Recipe } from '../recipes/entities/recipe.entity';
 import { AddRecipeToMealDto } from '../users/dto/add-recipe-to-meal.dto';
+import { RecipesService } from '../recipes/recipes.service';
 
 const createMealDto = new CreateMealDto({
   name: 'Test Meal',
@@ -59,7 +60,8 @@ const addRecipeToMealDto = new AddRecipeToMealDto({
 describe('MealsService', () => {
   let mealsService: MealsService;
   let mealsRepository: Repository<Meal>;
-  let usersRepository: Repository<User>;
+  let usersService: UsersService;
+  let recipesService: RecipesService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -71,21 +73,20 @@ describe('MealsService', () => {
             create: jest.fn().mockReturnValue(mockMeals[0]),
             save: jest.fn().mockResolvedValue(mockMeals[0]),
             find: jest.fn().mockResolvedValue(mockMeals),
-            findOneOrFail: jest.fn().mockResolvedValue(mockMeals[0]),
+            findOne: jest.fn().mockResolvedValue(mockMeals[0]),
             remove: jest.fn(),
           },
         },
         {
-          provide: getRepositoryToken(User),
+          provide: UsersService,
           useValue: {
-            findOneOrFail: jest.fn().mockResolvedValue(mockUser),
+            findOne: jest.fn().mockResolvedValue(mockUser),
           },
         },
-        { provide: UsersService, useValue: {} },
         {
-          provide: getRepositoryToken(Recipe),
+          provide: RecipesService,
           useValue: {
-            findOneOrFail: jest.fn().mockResolvedValue(mockRecipes[0]),
+            findOne: jest.fn().mockResolvedValue(mockRecipes[0]),
           },
         },
       ],
@@ -93,7 +94,8 @@ describe('MealsService', () => {
 
     mealsService = module.get<MealsService>(MealsService);
     mealsRepository = module.get<Repository<Meal>>(getRepositoryToken(Meal));
-    usersRepository = module.get<Repository<User>>(getRepositoryToken(User));
+    usersService = module.get<UsersService>(UsersService);
+    recipesService = module.get<RecipesService>(RecipesService);
   });
 
   it('should be defined', () => {
@@ -110,9 +112,7 @@ describe('MealsService', () => {
 
     it('should throw an error if user is not found', async () => {
       // Arrange
-      jest
-        .spyOn(usersRepository, 'findOneOrFail')
-        .mockRejectedValueOnce(new Error());
+      jest.spyOn(usersService, 'findOne').mockRejectedValueOnce(new Error());
       // Act
       const result = mealsService.create(createMealDto, mockUser.id);
       // Assert
@@ -148,9 +148,7 @@ describe('MealsService', () => {
 
     it('should throw an error if meal is not found', () => {
       // Arrange
-      jest
-        .spyOn(mealsRepository, 'findOneOrFail')
-        .mockRejectedValueOnce(new Error());
+      jest.spyOn(mealsRepository, 'findOne').mockResolvedValueOnce(null);
       // Act
       const result = mealsService.findOne(mockMeals[0].id, mockUser.id);
       // Assert
@@ -206,7 +204,7 @@ describe('MealsService', () => {
     it('should add a recipe to a meal', async () => {
       // Arrange
       jest
-        .spyOn(mealsRepository, 'findOneOrFail')
+        .spyOn(mealsRepository, 'findOne')
         .mockResolvedValueOnce({ ...mockMeals[0], recipes: [] });
       // Act
       const result = await mealsService.addRecipe(
@@ -220,9 +218,7 @@ describe('MealsService', () => {
 
     it('should throw an error if meal is not found', async () => {
       // Arrange
-      jest
-        .spyOn(mealsRepository, 'findOneOrFail')
-        .mockRejectedValueOnce(new Error());
+      jest.spyOn(mealsRepository, 'findOne').mockResolvedValueOnce(null);
       // Act
       const result = mealsService.addRecipe(
         mockMeals[0].id,

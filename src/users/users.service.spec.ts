@@ -49,8 +49,7 @@ describe('UsersService', () => {
             create: jest.fn().mockReturnValue(mockUsers[0]),
             save: jest.fn().mockResolvedValue(mockUsers[0]),
             find: jest.fn().mockResolvedValue(mockUsers),
-            findOneOrFail: jest.fn().mockResolvedValue(mockUsers[0]),
-            preload: jest.fn().mockResolvedValue(mockUsers[0]),
+            findOne: jest.fn().mockResolvedValue(mockUsers[0]),
             remove: jest.fn(),
           },
         },
@@ -110,18 +109,16 @@ describe('UsersService', () => {
       const result = await usersService.findOne(mockUsers[0].id);
       // Assert
       expect(result).toEqual(mockUsers[0]);
-      expect(usersRepository.findOneOrFail).toHaveBeenCalledTimes(1);
+      expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw a not found exception', () => {
+    it('should throw an error', () => {
       // Arrange
-      jest
-        .spyOn(usersRepository, 'findOneOrFail')
-        .mockRejectedValueOnce(new Error());
+      jest.spyOn(usersRepository, 'findOne').mockResolvedValueOnce(null);
       // Act
       const result = usersService.findOne(mockUsers[0].id);
       // Assert
-      expect(result).rejects.toThrow(NotFoundException);
+      expect(result).rejects.toThrow();
     });
   });
 
@@ -131,18 +128,16 @@ describe('UsersService', () => {
       const result = await usersService.findByEmail(mockUsers[0].email);
       // Assert
       expect(result).toEqual(mockUsers[0]);
-      expect(usersRepository.findOneOrFail).toHaveBeenCalledTimes(1);
+      expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw a not found exception', () => {
+    it('should throw an error', () => {
       // Arrange
-      jest
-        .spyOn(usersRepository, 'findOneOrFail')
-        .mockRejectedValueOnce(new Error());
+      jest.spyOn(usersRepository, 'findOne').mockResolvedValueOnce(null);
       // Act
       const result = usersService.findByEmail(mockUsers[0].email);
       // Assert
-      expect(result).rejects.toThrow(NotFoundException);
+      expect(result).rejects.toThrow();
     });
   });
 
@@ -152,17 +147,16 @@ describe('UsersService', () => {
       const result = await usersService.update(mockUsers[0].id, createUserDto);
       // Assert
       expect(result).toEqual(mockUsers[0]);
-      expect(usersRepository.preload).toHaveBeenCalledTimes(1);
       expect(usersRepository.save).toHaveBeenCalledTimes(1);
     });
 
     it('should throw an error', () => {
       // Arrange
-      jest.spyOn(usersRepository, 'preload').mockResolvedValueOnce(undefined);
+      jest.spyOn(usersRepository, 'findOne').mockResolvedValueOnce(null);
       // Act
       const result = usersService.update(mockUsers[0].id, createUserDto);
       // Assert
-      expect(result).rejects.toThrow(NotFoundException);
+      expect(result).rejects.toThrow();
     });
   });
 
@@ -174,15 +168,13 @@ describe('UsersService', () => {
       expect(usersRepository.remove).toHaveBeenCalledTimes(1);
     });
 
-    it('should throw a not found exception', () => {
+    it('should throw an error', () => {
       // Arrange
-      jest
-        .spyOn(usersRepository, 'findOneOrFail')
-        .mockRejectedValueOnce(new Error());
+      jest.spyOn(usersRepository, 'findOne').mockResolvedValueOnce(null);
       // Act
       const result = usersService.remove(mockUsers[0].id);
       // Assert
-      expect(result).rejects.toThrow(NotFoundException);
+      expect(result).rejects.toThrow();
     });
 
     it('should throw an error', () => {

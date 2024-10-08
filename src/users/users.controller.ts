@@ -8,6 +8,9 @@ import {
   Delete,
   UseGuards,
   Request,
+  HttpCode,
+  HttpStatus,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -57,27 +60,33 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Get('meals/:id')
-  async findOneMeal(@Param('id') id: string, @Request() req) {
+  async findOneMeal(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Request() req,
+  ) {
     const meal = await this.mealsService.findOne(id, req.user.sub);
     return meal;
   }
 
   @UseGuards(AuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.usersService.findOne(id);
   }
 
   @UseGuards(AuthGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  async update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return await this.usersService.update(id, updateUserDto);
   }
 
   @UseGuards(AuthGuard)
   @Patch('meals/:id')
   async updateMeal(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateMealDto: UpdateMealDto,
     @Request() req,
   ) {
@@ -86,20 +95,25 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.usersService.remove(id);
   }
 
   @UseGuards(AuthGuard)
   @Delete('meals/:id')
-  async removeMeal(@Param('id') id: string, @Request() req) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeMeal(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Request() req,
+  ) {
     return this.mealsService.remove(id, req.user.sub);
   }
 
   @UseGuards(AuthGuard)
   @Post('meals/:mealId/recipe')
   async addRecipeToMeal(
-    @Param('mealId') mealId: string,
+    @Param('mealId', new ParseUUIDPipe()) mealId: string,
     @Body() addRecipeToMealDto: AddRecipeToMealDto,
     @Request() req,
   ) {
@@ -108,5 +122,16 @@ export class UsersController {
       req.user.sub,
       addRecipeToMealDto,
     );
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('meals/:mealId/recipe/:recipeId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeRecipeFromMeal(
+    @Param('mealId', new ParseUUIDPipe()) mealId: string,
+    @Param('recipeId', new ParseUUIDPipe()) recipeId: string,
+    @Request() req,
+  ) {
+    return this.mealsService.removeRecipe(mealId, req.user.sub, recipeId);
   }
 }

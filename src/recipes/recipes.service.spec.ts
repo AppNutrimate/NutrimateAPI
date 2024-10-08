@@ -48,8 +48,7 @@ describe('RecipesService', () => {
             create: jest.fn().mockReturnValue(mockRecipes[0]),
             save: jest.fn().mockResolvedValue(mockRecipes[0]),
             find: jest.fn().mockResolvedValue(mockRecipes),
-            findOneOrFail: jest.fn().mockResolvedValue(mockRecipes[0]),
-            preload: jest.fn().mockResolvedValue(mockRecipes[0]),
+            findOne: jest.fn().mockResolvedValue(mockRecipes[0]),
             remove: jest.fn().mockResolvedValue(mockRecipes[0]),
           },
         },
@@ -111,14 +110,12 @@ describe('RecipesService', () => {
       const result = await recipesService.findOne(mockRecipes[0].id);
       // Assert
       expect(result).toEqual(mockRecipes[0]);
-      expect(recipesRepository.findOneOrFail).toHaveBeenCalledTimes(1);
+      expect(recipesRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
     it('should throw an error', () => {
       // Arrange
-      jest
-        .spyOn(recipesRepository, 'findOneOrFail')
-        .mockRejectedValueOnce(new Error());
+      jest.spyOn(recipesRepository, 'findOne').mockResolvedValueOnce(null);
       // Act
       const result = recipesService.findOne(mockRecipes[0].id);
       // Assert
@@ -135,13 +132,12 @@ describe('RecipesService', () => {
       );
       // Assert
       expect(result).toEqual(mockRecipes[0]);
-      expect(recipesRepository.preload).toHaveBeenCalledTimes(1);
       expect(recipesRepository.save).toHaveBeenCalledTimes(1);
     });
 
     it('should throw an error', () => {
       // Arrange
-      jest.spyOn(recipesRepository, 'preload').mockResolvedValueOnce(null);
+      jest.spyOn(recipesRepository, 'save').mockRejectedValueOnce(new Error());
       // Act
       const result = recipesService.update(mockRecipes[0].id, createRecipeDto);
       // Assert
@@ -160,7 +156,9 @@ describe('RecipesService', () => {
 
     it('should throw an error', () => {
       // Arrange
-      jest.spyOn(recipesService, 'findOne').mockRejectedValueOnce(new Error());
+      jest
+        .spyOn(recipesRepository, 'remove')
+        .mockRejectedValueOnce(new Error());
       // Act
       const result = recipesService.remove(mockRecipes[0].id);
       // Assert

@@ -22,24 +22,18 @@ export class RecipesService {
   }
 
   async findOne(id: string) {
-    try {
-      return await this.recipesRepository.findOneOrFail({ where: { id } });
-    } catch (error) {
-      throw new NotFoundException(error.message);
+    const recipe = await this.recipesRepository.findOne({ where: { id } });
+
+    if (!recipe) {
+      throw new NotFoundException('Recipe not found');
     }
+
+    return recipe;
   }
 
   async update(id: string, updateRecipeDto: UpdateRecipeDto) {
-    const recipe = await this.recipesRepository.preload({
-      id,
-      ...updateRecipeDto,
-    });
-
-    if (!recipe) {
-      throw new NotFoundException('Recipe not found!');
-    }
-
-    return await this.recipesRepository.save(recipe);
+    const recipe = await this.findOne(id);
+    return await this.recipesRepository.save({ ...recipe, ...updateRecipeDto });
   }
 
   async remove(id: string) {

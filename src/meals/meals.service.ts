@@ -7,51 +7,47 @@ import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Recipe } from '../recipes/entities/recipe.entity';
 import { AddRecipeToMealDto } from '../users/dto/add-recipe-to-meal.dto';
+import { UsersService } from '../users/users.service';
+import { RecipesService } from '../recipes/recipes.service';
 
 @Injectable()
 export class MealsService {
   constructor(
     @InjectRepository(Meal)
     private mealsRepository: Repository<Meal>,
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
-    @InjectRepository(Recipe)
-    private recipesRepository: Repository<Recipe>,
+    private readonly usersService: UsersService,
+    private readonly recipesService: RecipesService,
   ) {}
 
   async create(createMealDto: CreateMealDto, userId: string) {
-    // TODO change to use user service
-    try {
-      const { name, icon } = createMealDto;
-      const user = await this.usersRepository.findOneOrFail({
-        where: { id: userId },
-      });
-
-      const meal = this.mealsRepository.create({
-        name,
-        icon,
-        user,
-      });
-      return await this.mealsRepository.save(meal);
-    } catch (error) {
-      throw new NotFoundException(error.message);
-    }
+    const { name, icon } = createMealDto;
+    const user = await this.usersService.findOne(userId);
+    const meal = this.mealsRepository.create({
+      name,
+      icon,
+      user,
+    });
+    return await this.mealsRepository.save(meal);
   }
 
   async findAll(userId: string) {
-    return await this.mealsRepository.find({ where: { user: { id: userId } } });
+    return await this.mealsRepository.find({
+      where: { user: { id: userId } },
+      relations: ['recipes'],
+    });
   }
 
   async findOne(id: string, userId: string) {
-    try {
-      const meal = await this.mealsRepository.findOneOrFail({
-        where: { id, user: { id: userId } },
-        relations: ['recipes'],
-      });
-      return meal;
-    } catch (error) {
-      throw new NotFoundException(error.message);
+    const meal = await this.mealsRepository.findOne({
+      where: { id, user: { id: userId } },
+      relations: ['recipes'],
+    });
+
+    if (!meal) {
+      throw new NotFoundException('Meal not found');
     }
+
+    return meal;
   }
 
   async update(id: string, userId: string, updateMealDto: UpdateMealDto) {
@@ -69,22 +65,19 @@ export class MealsService {
     userId: string,
     addRecipeToMealDto: AddRecipeToMealDto,
   ) {
-    try {
-      const { recipeId } = addRecipeToMealDto;
-      const meal = await this.mealsRepository.findOneOrFail({
-        where: { id: mealId, user: { id: userId } },
-        relations: ['recipes'],
-      });
+    const { recipeId } = addRecipeToMealDto;
+    const meal = await this.findOne(mealId, userId);
+    const recipe = await this.recipesService.findOne(recipeId);
+    meal.recipes.push(recipe);
+    return await this.mealsRepository.save(meal);
+  }
 
-      const recipe = await this.recipesRepository.findOneOrFail({
-        where: { id: recipeId },
-      });
-
-      meal.recipes.push(recipe);
-
-      return await this.mealsRepository.save(meal);
-    } catch (error) {
-      throw new NotFoundException(error.message);
+  async removeRecipe(mealId: string, userId: string, recipeId: string) {
+    const meal = await this.findOne(mealId, userId);
+    if (!meal.recipes.some((recipe) => recipe.id === recipeId)) {
+      throw new NotFoundException('Recipe not found in meal');
     }
+    meal.recipes = meal.recipes.filter((recipe) => recipe.id !== recipeId);
+    return await this.mealsRepository.save(meal);
   }
 }

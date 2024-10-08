@@ -23,35 +23,31 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    try {
-      return await this.usersRepository.findOneOrFail({ where: { id } });
-    } catch (error) {
-      throw new NotFoundException(error.message);
+    const user = await this.usersRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
+
+    return user;
   }
 
   async findByEmail(email: string) {
-    try {
-      return await this.usersRepository.findOneOrFail({ where: { email } });
-    } catch (error) {
-      throw new NotFoundException(error.message);
+    const user = await this.usersRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
+
+    return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.usersRepository.preload({
-      id,
-      ...updateUserDto,
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found!');
-    }
-
+    const user = await this.findOne(id);
     if (updateUserDto.password) {
-      user.password = await argon2.hash(updateUserDto.password);
+      updateUserDto.password = await argon2.hash(updateUserDto.password);
     }
-    return this.usersRepository.save(user);
+    return this.usersRepository.save({ ...user, ...updateUserDto });
   }
 
   async remove(id: string) {
