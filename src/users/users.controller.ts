@@ -69,9 +69,9 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard)
-  @Get(':id')
-  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.usersService.findOne(id);
+  @Get('user')
+  findOne(@Request() req) {
+    return this.usersService.findOne(req.user.sub);
   }
 
   @UseGuards(AuthGuard)
