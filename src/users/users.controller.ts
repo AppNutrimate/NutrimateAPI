@@ -8,6 +8,9 @@ import {
   Delete,
   UseGuards,
   Request,
+  HttpCode,
+  HttpStatus,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,7 +18,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { MealsService } from '../meals/meals.service';
 import { CreateMealDto } from '../meals/dto/create-meal.dto';
+import { UpdateMealDto } from '../meals/dto/update-meal.dto';
+import { AddRecipeToMealDto } from './dto/add-recipe-to-meal.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('users')
+@ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   constructor(
@@ -27,6 +35,13 @@ export class UsersController {
   async create(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
     return { message: 'User created sucessfully', user };
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('meals')
+  async createMeal(@Body() createMealDto: CreateMealDto, @Request() req) {
+    const meal = await this.mealsService.create(createMealDto, req.user.sub);
+    return { message: 'Meal created sucessfully', meal };
   }
 
   @UseGuards(AuthGuard)
@@ -45,33 +60,78 @@ export class UsersController {
 
   @UseGuards(AuthGuard)
   @Get('meals/:id')
-  async findOneMeal(@Param('id') id: string, @Request() req) {
+  async findOneMeal(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Request() req,
+  ) {
     const meal = await this.mealsService.findOne(id, req.user.sub);
     return meal;
   }
 
   @UseGuards(AuthGuard)
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  @Get('user')
+  findOne(@Request() req) {
+    return this.usersService.findOne(req.user.sub);
   }
 
   @UseGuards(AuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+  async update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return await this.usersService.update(id, updateUserDto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('meals/:id')
+  async updateMeal(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateMealDto: UpdateMealDto,
+    @Request() req,
+  ) {
+    return await this.mealsService.update(id, req.user.sub, updateMealDto);
   }
 
   @UseGuards(AuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.usersService.remove(id);
   }
 
   @UseGuards(AuthGuard)
-  @Post('meals')
-  async createMeal(@Body() createMealDto: CreateMealDto, @Request() req) {
-    const meal = await this.mealsService.create(createMealDto, req.user.sub);
-    return { message: 'Meal created sucessfully', meal };
+  @Delete('meals/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeMeal(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Request() req,
+  ) {
+    return this.mealsService.remove(id, req.user.sub);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('meals/:mealId/recipe')
+  async addRecipeToMeal(
+    @Param('mealId', new ParseUUIDPipe()) mealId: string,
+    @Body() addRecipeToMealDto: AddRecipeToMealDto,
+    @Request() req,
+  ) {
+    return this.mealsService.addRecipe(
+      mealId,
+      req.user.sub,
+      addRecipeToMealDto,
+    );
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('meals/:mealId/recipe/:recipeId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeRecipeFromMeal(
+    @Param('mealId', new ParseUUIDPipe()) mealId: string,
+    @Param('recipeId', new ParseUUIDPipe()) recipeId: string,
+    @Request() req,
+  ) {
+    return this.mealsService.removeRecipe(mealId, req.user.sub, recipeId);
   }
 }

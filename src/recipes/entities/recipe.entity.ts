@@ -28,4 +28,8 @@ export class Recipe {
 
   @Column()
   prepTime: number;
+
+  constructor(partial: Partial<Recipe>) {
+    Object.assign(this, partial);
+  }
 }

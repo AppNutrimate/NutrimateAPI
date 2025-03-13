@@ -13,45 +13,45 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
     const user = this.usersRepository.create(createUserDto);
-    return this.usersRepository.save(user);
+    return await this.usersRepository.save(user);
   }
 
-  findAll() {
-    return this.usersRepository.find();
+  async findAll() {
+    return await this.usersRepository.find();
   }
 
-  findOne(id: string) {
-    return this.usersRepository.findOne({ where: { id } });
-  }
-
-  findByEmail(email: string) {
-    return this.usersRepository.findOne({ where: { email } });
-  }
-
-  async update(id: string, updateUserDto: UpdateUserDto) {
-    const user = await this.usersRepository.preload({
-      id,
-      ...updateUserDto,
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found!');
-    }
-
-    if (updateUserDto.password) {
-      user.password = await argon2.hash(updateUserDto.password);
-    }
-    return this.usersRepository.save(user);
-  }
-
-  async remove(id: string) {
+  async findOne(id: string) {
     const user = await this.usersRepository.findOne({ where: { id } });
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
+    return user;
+  }
+
+  async findByEmail(email: string) {
+    const user = await this.usersRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.findOne(id);
+    if (updateUserDto.password) {
+      updateUserDto.password = await argon2.hash(updateUserDto.password);
+    }
+    return this.usersRepository.save({ ...user, ...updateUserDto });
+  }
+
+  async remove(id: string) {
+    const user = await this.findOne(id);
     await this.usersRepository.remove(user);
   }
 }

@@ -6,4 +6,8 @@ export class CreateMealDto {
 
   @IsString()
   name: string;
+
+  constructor(partial: Partial<CreateMealDto>) {
+    Object.assign(this, partial);
+  }
 }
