@@ -1,6 +1,7 @@
 import {
   IsDateString,
   IsEmail,
+  IsNotEmpty,
   IsPhoneNumber,
   IsString,
   IsStrongPassword,
@@ -8,9 +9,11 @@ import {
 
 export class CreateUserDto {
   @IsString()
+  @IsNotEmpty()
   firstName: string;
 
   @IsString()
+  @IsNotEmpty()
   lastName: string;
 
   @IsString()
@@ -20,12 +23,17 @@ export class CreateUserDto {
   phone: string;
 
   @IsDateString()
+  @IsNotEmpty()
   birth: string;
 
   @IsEmail()
+  @IsNotEmpty()
+  @IsString()
   email: string;
 
   @IsStrongPassword()
+  @IsNotEmpty()
+  @IsString()
   password: string;
 
   constructor(partial: Partial<CreateUserDto>) {
