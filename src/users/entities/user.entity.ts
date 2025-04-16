@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import * as argon2 from 'argon2';
+import { Max, Min } from 'class-validator';
 
 @Entity()
 export class User {
@@ -33,6 +34,11 @@ export class User {
 
   @Column()
   password: string;
+
+  @Column({ nullable: true })
+  @Min(0, { message: 'Deve ser maior do que 0' })
+  @Max(300, { message: 'Não deve ser maior que 300' })
+  height: number;
 
   @BeforeInsert()
   async hashPassword() {
