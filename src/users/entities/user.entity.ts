@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import * as argon2 from 'argon2';
 import { Max, Min } from 'class-validator';
+import { Weight } from 'src/weights/entities/weight.entity';
 
 @Entity()
 export class User {
@@ -47,6 +48,9 @@ export class User {
 
   @OneToMany(() => Meal, (meal) => meal.user)
   meals: Meal[];
+
+  @OneToMany(() => Weight, (weight) => weight.user)
+  weights: Weight[];
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
