@@ -30,7 +30,7 @@ export class User {
   @Column()
   birth: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
   @Column()
