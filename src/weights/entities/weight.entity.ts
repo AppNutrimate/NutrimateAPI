@@ -7,7 +7,7 @@ export class Weight {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
-    @Column('decimal', { precision: 5, scale: 3 })
+    @Column('decimal', { precision: 6, scale: 3 })
     value: number;
 
     @Column()
