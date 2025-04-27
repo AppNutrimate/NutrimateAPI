@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ProfessionalsModule } from './professionals/professionals.module';
-import { Weight } from './weights/entities/weight.entity';
 import { WeightsModule } from './weights/weights.module';
 
 @Module({
