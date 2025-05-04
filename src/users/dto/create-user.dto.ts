@@ -1,6 +1,7 @@
 import {
   IsDateString,
   IsEmail,
+  IsNumber,
   IsNotEmpty,
   IsPhoneNumber,
   IsString,
@@ -35,6 +36,9 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsString()
   password: string;
+
+  @IsNumber()
+  height: number;
 
   constructor(partial: Partial<CreateUserDto>) {
     Object.assign(this, partial);

@@ -5,6 +5,8 @@ import { RecipesModule } from './recipes/recipes.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ProfessionalsModule } from './professionals/professionals.module';
+import { WeightsModule } from './weights/weights.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     UsersModule,
     MealsModule,
     RecipesModule,
+    ProfessionalsModule,
+    WeightsModule,
     AuthModule,
   ],
 })
