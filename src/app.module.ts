@@ -7,6 +7,9 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ProfessionalsModule } from './professionals/professionals.module';
 import { WeightsModule } from './weights/weights.module';
+import { WorkoutsModule } from './workouts/workouts.module';
+import { Sport } from './sports/entities/sport.entity';
+import { SportsModule } from './sports/sports.module';
 
 @Module({
   imports: [
@@ -32,6 +35,8 @@ import { WeightsModule } from './weights/weights.module';
     RecipesModule,
     ProfessionalsModule,
     WeightsModule,
+    WorkoutsModule,
+    SportsModule,
     AuthModule,
   ],
 })
