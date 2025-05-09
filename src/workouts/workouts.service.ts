@@ -13,7 +13,12 @@ export class WorkoutsService {
     ) { }
 
     async create(createWorkoutDto: CreateWorkoutDto) {
-        const workout = this.workoutsRepository.create(createWorkoutDto);
+        const workout = this.workoutsRepository.create({
+            ...createWorkoutDto,
+            user: { id: createWorkoutDto.userId },
+            sport: { id: createWorkoutDto.sportId },
+        });
+
         return await this.workoutsRepository.save(workout);
     }
 
@@ -31,17 +36,24 @@ export class WorkoutsService {
 
     async findOne(id: string) {
         const workout = await this.workoutsRepository.findOne({ where: { id } });
-
         if (!workout) {
             throw new NotFoundException('Workout not found');
         }
-
         return workout;
     }
 
     async update(id: string, updateWorkoutDto: Partial<CreateWorkoutDto>) {
         const workout = await this.findOne(id);
         Object.assign(workout, updateWorkoutDto);
+
+        if (updateWorkoutDto.userId) {
+            workout.user = { id: updateWorkoutDto.userId } as any;
+        }
+
+        if (updateWorkoutDto.sportId) {
+            workout.sport = { id: updateWorkoutDto.sportId } as any;
+        }
+
         return await this.workoutsRepository.save(workout);
     }
 

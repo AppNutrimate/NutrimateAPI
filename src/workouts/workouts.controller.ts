@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { WorkoutsService } from "./workouts.service";
 import { AuthGuard } from "src/auth/auth.guard";
@@ -36,5 +36,11 @@ export class WorkoutsController {
         @Param('id', new ParseUUIDPipe) id: string,
         @Body() updateWorkoutDto: Partial<CreateWorkoutDto>) {
         return this.workoutService.update(id, updateWorkoutDto);
+    }
+
+    @UseGuards(AuthGuard)
+    @Delete(':id')
+    remove(@Param('id', new ParseUUIDPipe) id: string) {
+        return this.workoutService.remove(id);
     }
 }

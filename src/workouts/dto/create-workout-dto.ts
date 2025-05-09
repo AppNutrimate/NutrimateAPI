@@ -1,4 +1,4 @@
-import { IsDateString, IsEnum, IsNumber, IsString, Max, Min } from "class-validator";
+import { IsDateString, IsNumber, IsString, Max, Min } from "class-validator";
 
 export class CreateWorkoutDto {
     @IsString()
@@ -13,7 +13,7 @@ export class CreateWorkoutDto {
     @IsNumber()
     @Min(1)
     @Max(1440)
-    duration: number;
+    durationInMin: number;
 
     @IsNumber()
     @Min(1)
