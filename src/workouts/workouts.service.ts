@@ -22,14 +22,24 @@ export class WorkoutsService {
         return await this.workoutsRepository.save(workout);
     }
 
-    async findByUser(userId: string) {
-        const workouts = await this.workoutsRepository.find({
+    async findByUser(userId: string, page = 1, limit = 10) {
+        const [workouts, total] = await this.workoutsRepository.findAndCount({
             where: { user: { id: userId } },
             relations: ['sport'],
             order: { date: 'DESC' },
+            take: limit,
+            skip: (page - 1) * limit,
         });
-        return workouts;
+
+        return workouts
+        // return {
+        //     data: workouts,
+        //     total,
+        //     page,
+        //     lastPage: Math.ceil(total / limit),
+        // };
     }
+
 
     async findAll() {
         return await this.workoutsRepository.find();

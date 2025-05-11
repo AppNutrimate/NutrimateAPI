@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { WorkoutsService } from "./workouts.service";
 import { AuthGuard } from "src/auth/auth.guard";
@@ -19,10 +19,11 @@ export class WorkoutsController {
 
     @UseGuards(AuthGuard)
     @Get()
-    findByUser(@Req() req: any) {
+    findByUser(@Req() req: any, @Query('page') page = 1, @Query('limit') limit = 10) {
         const userId = req.user.id;
-        return this.workoutService.findByUser(userId);
+        return this.workoutService.findByUser(userId, Number(page), Number(limit));
     }
+
 
     @UseGuards(AuthGuard)
     @Get(':id')
