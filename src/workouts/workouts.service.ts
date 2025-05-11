@@ -25,6 +25,7 @@ export class WorkoutsService {
     async findByUser(userId: string) {
         const workouts = await this.workoutsRepository.find({
             where: { user: { id: userId } },
+            relations: ['sport'],
             order: { date: 'DESC' },
         });
         return workouts;
