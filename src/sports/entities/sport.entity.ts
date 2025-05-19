@@ -12,6 +12,9 @@ export class Sport {
     @Column()
     icon: string;
 
+    @Column()
+    met: number;
+
     @OneToMany(() => Workout, workout => workout.sport)
     workouts: Workout[];
 }
