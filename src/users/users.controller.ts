@@ -11,6 +11,8 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -29,7 +31,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly mealsService: MealsService,
-  ) {}
+  ) { }
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
@@ -69,6 +71,17 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('email')
+  async findUserByEmail(@Query('email') email: string) {
+    if (!email || email.length < 5) {
+      throw new BadRequestException('Caracteres insuficientes para a busca');
+    }
+
+    const user = await this.usersService.findUsersByEmail(email);
+    return user;
+  }
+
+  @UseGuards(AuthGuard)
   @Get('user')
   findOne(@Request() req) {
     return this.usersService.findOne(req.user.sub);
@@ -79,8 +92,10 @@ export class UsersController {
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateUserDto: UpdateUserDto,
+    @Request() req,
   ) {
-    return await this.usersService.update(id, updateUserDto);
+    const loggedUserId = req.user.sub;
+    return await this.usersService.update(id, updateUserDto, loggedUserId);
   }
 
   @UseGuards(AuthGuard)
