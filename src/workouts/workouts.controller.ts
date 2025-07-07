@@ -19,8 +19,13 @@ export class WorkoutsController {
 
     @UseGuards(AuthGuard)
     @Get()
-    findByUser(@Req() req: any, @Query('page') page = 1, @Query('limit') limit = 10) {
-        const userId = req.user.id;
+    findByUser(
+        @Req() req: any,
+        @Query('userId') userIdFromQuery?: string,
+        @Query('page') page = 1,
+        @Query('limit') limit = 10
+    ) {
+        const userId = userIdFromQuery || req.user.sub;
         return this.workoutService.findByUser(userId, Number(page), Number(limit));
     }
 

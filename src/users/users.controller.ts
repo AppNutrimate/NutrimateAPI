@@ -61,6 +61,13 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard)
+  @Get(':userId/meals')
+  async findUserMealsToPro(@Request() req, @Query('userId') userIdFromQuery: string) {
+    const meals = await this.mealsService.findAll(userIdFromQuery);
+    return meals;
+  }
+
+  @UseGuards(AuthGuard)
   @Get('meals/:id')
   async findOneMeal(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -86,6 +93,13 @@ export class UsersController {
   findOne(@Request() req) {
     return this.usersService.findOne(req.user.sub);
   }
+
+  @UseGuards(AuthGuard)
+  @Get(':id')
+  findById(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
+
 
   @UseGuards(AuthGuard)
   @Patch(':id')
