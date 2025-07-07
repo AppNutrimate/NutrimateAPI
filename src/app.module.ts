@@ -8,8 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ProfessionalsModule } from './professionals/professionals.module';
 import { WeightsModule } from './weights/weights.module';
 import { WorkoutsModule } from './workouts/workouts.module';
-import { Sport } from './sports/entities/sport.entity';
 import { SportsModule } from './sports/sports.module';
+import { PatientsModule } from './patients/patients.module';
 
 @Module({
   imports: [
@@ -37,6 +37,7 @@ import { SportsModule } from './sports/sports.module';
     WeightsModule,
     WorkoutsModule,
     SportsModule,
+    PatientsModule,
     AuthModule,
   ],
 })

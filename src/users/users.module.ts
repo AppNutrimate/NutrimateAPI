@@ -9,6 +9,6 @@ import { MealsModule } from '../meals/meals.module';
   imports: [TypeOrmModule.forFeature([User]), forwardRef(() => MealsModule)],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService],
+  exports: [UsersService, TypeOrmModule],
 })
-export class UsersModule {}
+export class UsersModule { }
