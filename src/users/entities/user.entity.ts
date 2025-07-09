@@ -1,4 +1,3 @@
-import { Meal } from '../../meals/entities/meal.entity';
 import {
   BeforeInsert,
   Column,
@@ -47,8 +46,8 @@ export class User {
     this.password = await argon2.hash(this.password);
   }
 
-  @OneToMany(() => Meal, (meal) => meal.user)
-  meals: Meal[];
+  // @OneToMany(() => Meal, (meal) => meal.user)
+  // meals: Meal[];
 
   @OneToMany(() => Weight, (weight) => weight.user)
   weights: Weight[];

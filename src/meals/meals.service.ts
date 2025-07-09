@@ -9,6 +9,7 @@ import { Recipe } from '../recipes/entities/recipe.entity';
 import { AddRecipeToMealDto } from '../users/dto/add-recipe-to-meal.dto';
 import { UsersService } from '../users/users.service';
 import { RecipesService } from '../recipes/recipes.service';
+import { DietPlan } from 'src/dietplans/entities/dietplan.entity';
 
 @Injectable()
 export class MealsService {
@@ -17,29 +18,32 @@ export class MealsService {
     private mealsRepository: Repository<Meal>,
     private readonly usersService: UsersService,
     private readonly recipesService: RecipesService,
-  ) {}
 
-  async create(createMealDto: CreateMealDto, userId: string) {
+    @InjectRepository(DietPlan)
+    private dietPlansRepository: Repository<DietPlan>
+  ) { }
+
+  async create(createMealDto: CreateMealDto, dietPlanId: string) {
     const { name, icon } = createMealDto;
-    const user = await this.usersService.findOne(userId);
+    const dietPlan = await this.dietPlansRepository.findOne({ where: { id: dietPlanId } });
     const meal = this.mealsRepository.create({
       name,
       icon,
-      user,
+      dietPlan,
     });
     return await this.mealsRepository.save(meal);
   }
 
   async findAll(userId: string) {
     return await this.mealsRepository.find({
-      where: { user: { id: userId } },
-      relations: ['recipes'],
+      where: { dietPlan: { user: { id: userId } } },
+      relations: ['recipes', 'dietPlan'],
     });
   }
 
   async findOne(id: string, userId: string) {
     const meal = await this.mealsRepository.findOne({
-      where: { id, user: { id: userId } },
+      where: { id, dietPlan: { user: { id: userId } } },
       relations: ['recipes'],
     });
 

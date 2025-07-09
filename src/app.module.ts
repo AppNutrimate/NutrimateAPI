@@ -10,6 +10,7 @@ import { WeightsModule } from './weights/weights.module';
 import { WorkoutsModule } from './workouts/workouts.module';
 import { SportsModule } from './sports/sports.module';
 import { PatientsModule } from './patients/patients.module';
+import { DietPlansModule } from './dietplans/dietplans.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { PatientsModule } from './patients/patients.module';
     WorkoutsModule,
     SportsModule,
     PatientsModule,
+    DietPlansModule,
     AuthModule,
   ],
 })
