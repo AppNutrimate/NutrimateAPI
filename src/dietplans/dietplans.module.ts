@@ -9,13 +9,15 @@ import { DietPlansService } from "./dietplans.service";
 import { DietPlan } from "./entities/dietplan.entity";
 import { Patient } from "src/patients/entities/patient.entity";
 import { PatientsModule } from "src/patients/patients.module";
+import { MealsModule } from "src/meals/meals.module";
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([DietPlan, User, Professional, Patient]),
         forwardRef(() => UsersModule),
         ProfessionalsModule,
-        PatientsModule
+        PatientsModule,
+        forwardRef(() => MealsModule)
     ],
     controllers: [DietPlansController],
     providers: [DietPlansService],

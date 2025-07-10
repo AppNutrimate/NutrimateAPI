@@ -85,13 +85,19 @@ export class DietPlansService {
         await this.dietPlansRepository.remove(plan);
     }
 
-    async findByUser(userId: string): Promise<DietPlan[]> {
-        return this.dietPlansRepository.find({
+    //TODO: está chegando os 'isVisible: false' aos users
+    async findByUser(userId: string, professionalId: string): Promise<DietPlan[]> {
+        const allPlans = await this.dietPlansRepository.find({
             where: {
                 user: { id: userId },
             },
             relations: ['meals', 'meals.recipes', 'professional'],
-            order: { createdAt: 'DESC' },
+            order: { availableAt: 'DESC' },
         });
+
+        return allPlans.filter(
+            (plan) => plan.isVisible || plan.professional?.id === professionalId,
+        );
     }
+
 }

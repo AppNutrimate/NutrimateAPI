@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Meal } from '../entities/meal.entity';
 
 export class MealResponseDto {
     @ApiProperty()
@@ -14,7 +15,22 @@ export class MealResponseDto {
     // @ApiProperty({ type: () => [RecipeResponseDto] })
     // recipes: RecipeResponseDto[];
 
-    constructor(partial: Partial<MealResponseDto>) {
-        Object.assign(this, partial);
+    @ApiProperty()
+    dietPlanId: string;
+
+    @ApiProperty()
+    userId: string;
+
+    @ApiProperty()
+    professionalId: string;
+
+    constructor(meal: Meal) {
+        this.id = meal.id;
+        this.name = meal.name;
+        this.icon = meal.icon;
+
+        this.dietPlanId = meal.dietPlan?.id;
+        this.userId = meal.dietPlan?.user?.id;
+        this.professionalId = meal.dietPlan?.professional?.id;
     }
 }

@@ -112,15 +112,15 @@ export class UsersController {
     return await this.usersService.update(id, updateUserDto, loggedUserId);
   }
 
-  @UseGuards(AuthGuard)
-  @Patch('meals/:id')
-  async updateMeal(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updateMealDto: UpdateMealDto,
-    @Request() req,
-  ) {
-    return await this.mealsService.update(id, req.user.sub, updateMealDto);
-  }
+  // @UseGuards(AuthGuard)
+  // @Patch('meals/:id')
+  // async updateMeal(
+  //   @Param('id', new ParseUUIDPipe()) id: string,
+  //   @Body() updateMealDto: UpdateMealDto,
+  //   @Request() req,
+  // ) {
+  //   return await this.mealsService.update(id, req.user.sub, updateMealDto);
+  // }
 
   @UseGuards(AuthGuard)
   @Delete(':id')
@@ -129,15 +129,15 @@ export class UsersController {
     return this.usersService.remove(id);
   }
 
-  @UseGuards(AuthGuard)
-  @Delete('meals/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async removeMeal(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @Request() req,
-  ) {
-    return this.mealsService.remove(id, req.user.sub);
-  }
+  // @UseGuards(AuthGuard)
+  // @Delete('meals/:id')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async removeMeal(
+  //   @Param('id', new ParseUUIDPipe()) id: string,
+  //   @Request() req,
+  // ) {
+  //   return this.mealsService.remove(id, req.user.sub);
+  // }
 
   @UseGuards(AuthGuard)
   @Post('meals/:mealId/recipe')
