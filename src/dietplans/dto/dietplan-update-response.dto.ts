@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { MealResponseDto } from 'src/meals/dto/meal-response.dto';
 import { ProfessionalLowDto } from 'src/professionals/dto/professional-low.dto';
 
-export class DietPlanResponseDto {
+export class DietPlanUpdateResponseDto {
     @ApiProperty()
     id: string;
 
@@ -12,9 +12,6 @@ export class DietPlanResponseDto {
     @ApiProperty()
     isVisible: boolean;
 
-    @ApiProperty({ type: () => [MealResponseDto] })
-    meals: MealResponseDto[];
-
     @ApiProperty({ type: () => [ProfessionalLowDto] })
     professional: ProfessionalLowDto
 
@@ -23,6 +20,5 @@ export class DietPlanResponseDto {
         this.professional = new ProfessionalLowDto(plan.professional)
         this.availableAt = plan.availableAt;
         this.isVisible = plan.isVisible;
-        this.meals = plan.meals?.map((meal) => new MealResponseDto(meal)) || [];
     }
 }

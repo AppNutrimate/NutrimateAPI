@@ -8,6 +8,7 @@ import { CreateMealDto } from "src/meals/dto/create-meal.dto";
 import { MealsService } from "src/meals/meals.service";
 import { UpdateMealDto } from "src/meals/dto/update-meal.dto";
 import { MealResponseDto } from "src/meals/dto/meal-response.dto";
+import { DietPlanUpdateResponseDto } from "./dto/dietplan-update-response.dto";
 
 @Controller('diets')
 export class DietPlansController {
@@ -44,10 +45,10 @@ export class DietPlansController {
 
     @UseGuards(AuthGuard)
     @Put(':dietPlanId')
-    async update(@Req() req, @Param('dietPlanId') dietPlanId: string, @Body() dto: Partial<DietPlan>): Promise<DietPlanResponseDto> {
+    async update(@Req() req, @Param('dietPlanId') dietPlanId: string, @Body() dto: Partial<DietPlan>): Promise<DietPlanUpdateResponseDto> {
         const professionalId = req.user.sub;
         const updated = await this.dietPlansService.update(professionalId, dietPlanId, dto);
-        return new DietPlanResponseDto(updated);
+        return new DietPlanUpdateResponseDto(updated);
     }
 
     @UseGuards(AuthGuard)
