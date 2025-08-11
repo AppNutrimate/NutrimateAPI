@@ -1,9 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import * as argon2 from 'argon2';
 
 @Injectable()
@@ -37,19 +37,35 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    const user = await this.usersRepository.findOne({ where: { email } });
+    const users = await this.usersRepository.findOne({
+      where: { email }
+    });
 
-    if (!user) {
-      throw new NotFoundException('User not found');
+    if (!users) {
+      throw new NotFoundException('Email not found');
     }
-
-    return user;
+    return users;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  findUsersByEmail(email: string) {
+    const users = this.usersRepository.find({
+      where: { email: Like(`%${email}%`) },
+    })
+
+    if (!users) {
+      throw new NotFoundException('No users found with this email');
+    }
+
+    return users;
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto, loggedUserId: string) {
     const user = await this.findOne(id);
     if (updateUserDto.password) {
       updateUserDto.password = await argon2.hash(updateUserDto.password);
+    }
+    if (id !== loggedUserId) {
+      throw new ForbiddenException('Você não pode editar outro usuário');
     }
     return this.usersRepository.save({ ...user, ...updateUserDto });
   }

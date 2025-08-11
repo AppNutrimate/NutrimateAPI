@@ -1,45 +1,51 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMealDto } from './dto/create-meal.dto';
 import { UpdateMealDto } from './dto/update-meal.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Meal } from './entities/meal.entity';
 import { Repository } from 'typeorm';
-import { User } from '../users/entities/user.entity';
 import { Recipe } from '../recipes/entities/recipe.entity';
 import { AddRecipeToMealDto } from '../users/dto/add-recipe-to-meal.dto';
-import { UsersService } from '../users/users.service';
 import { RecipesService } from '../recipes/recipes.service';
+import { DietPlan } from 'src/dietplans/entities/dietplan.entity';
 
 @Injectable()
 export class MealsService {
   constructor(
     @InjectRepository(Meal)
     private mealsRepository: Repository<Meal>,
-    private readonly usersService: UsersService,
     private readonly recipesService: RecipesService,
-  ) {}
 
-  async create(createMealDto: CreateMealDto, userId: string) {
-    const { name, icon } = createMealDto;
-    const user = await this.usersService.findOne(userId);
+    @InjectRepository(DietPlan)
+    private dietPlansRepository: Repository<DietPlan>
+  ) { }
+
+  async create(dto: CreateMealDto, dietPlanId: string) {
+    const dietPlan = await this.dietPlansRepository.findOne({ where: { id: dietPlanId } });
+
+    if (!dietPlan) {
+      throw new NotFoundException("Plano alimentar não encontrado")
+    }
+
     const meal = this.mealsRepository.create({
-      name,
-      icon,
-      user,
+      name: dto.name,
+      icon: dto.icon,
+      dietPlan,
     });
+
     return await this.mealsRepository.save(meal);
   }
 
   async findAll(userId: string) {
     return await this.mealsRepository.find({
-      where: { user: { id: userId } },
-      relations: ['recipes'],
+      where: { dietPlan: { user: { id: userId } } },
+      relations: ['recipes', 'dietPlan'],
     });
   }
 
   async findOne(id: string, userId: string) {
     const meal = await this.mealsRepository.findOne({
-      where: { id, user: { id: userId } },
+      where: { id, dietPlan: { user: { id: userId } } },
       relations: ['recipes'],
     });
 
@@ -50,14 +56,46 @@ export class MealsService {
     return meal;
   }
 
-  async update(id: string, userId: string, updateMealDto: UpdateMealDto) {
-    const meal = await this.findOne(id, userId);
-    return await this.mealsRepository.save({ ...meal, ...updateMealDto });
+  async update(dietPlanId: string, mealId: string, professionalId: string, updateMealDto: UpdateMealDto) {
+    const meal = await this.mealsRepository.findOne({
+      where: { id: mealId },
+      relations: ['dietPlan', 'dietPlan.professional'],
+    });
+    if (!meal) {
+      throw new NotFoundException('Meal not found');
+    }
+
+    if (!meal.dietPlan || meal.dietPlan.id !== dietPlanId) {
+      throw new NotFoundException('Meal not found in this plan');
+    }
+
+    if (meal.dietPlan.professional.id !== professionalId) {
+      throw new ForbiddenException('Você não tem permissão para editar esta meal');
+    }
+
+    Object.assign(meal, updateMealDto);
+    return await this.mealsRepository.save(meal);
   }
 
-  async remove(id: string, userId: string) {
-    const meal = await this.findOne(id, userId);
-    return await this.mealsRepository.remove(meal);
+  async remove(dietPlanId: string, mealId: string, professionalId: string): Promise<void> {
+    const meal = await this.mealsRepository.findOne({
+      where: { id: mealId },
+      relations: ['dietPlan', 'dietPlan.professional'],
+    });
+
+    if (!meal) {
+      throw new NotFoundException('Meal not found');
+    }
+
+    if (meal.dietPlan.id !== dietPlanId) {
+      throw new NotFoundException('Meal not found');
+    }
+
+    if (!meal.dietPlan || meal.dietPlan.professional.id !== professionalId) {
+      throw new ForbiddenException('Você não tem permissão para excluir esta meal');
+    }
+
+    await this.mealsRepository.remove(meal);
   }
 
   async addRecipe(

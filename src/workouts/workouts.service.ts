@@ -23,8 +23,13 @@ export class WorkoutsService {
     }
 
     async findByUser(userId: string, page = 1, limit = 10) {
+
+        if (!userId) {
+            throw new NotFoundException('User not found');
+        }
+
         const [workouts, total] = await this.workoutsRepository.findAndCount({
-            where: { user: { id: userId } },
+            where: { userId },
             relations: ['sport'],
             order: { date: 'DESC' },
             take: limit,
@@ -32,12 +37,6 @@ export class WorkoutsService {
         });
 
         return workouts
-        // return {
-        //     data: workouts,
-        //     total,
-        //     page,
-        //     lastPage: Math.ceil(total / limit),
-        // };
     }
 
 

@@ -1,13 +1,14 @@
 import {
   Column,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Recipe } from '../../recipes/entities/recipe.entity';
-import { User } from '../../users/entities/user.entity';
+import { DietPlan } from 'src/dietplans/entities/dietplan.entity';
 
 @Entity()
 export class Meal {
@@ -20,8 +21,10 @@ export class Meal {
   @Column()
   name: string;
 
-  @ManyToOne(() => User, (user) => user.meals)
-  user: User;
+  @ManyToOne(() => DietPlan, dietPlan => dietPlan.meals)
+  @JoinColumn({ name: 'dietPlanId' })
+  dietPlan: DietPlan;
+
 
   @ManyToMany(() => Recipe)
   @JoinTable({ name: 'meal_recipe' })

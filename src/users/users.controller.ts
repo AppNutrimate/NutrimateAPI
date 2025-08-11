@@ -11,6 +11,8 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -29,7 +31,7 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly mealsService: MealsService,
-  ) {}
+  ) { }
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
@@ -59,6 +61,13 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard)
+  @Get(':userId/meals')
+  async findUserMealsToPro(@Request() req, @Query('userId') userIdFromQuery: string) {
+    const meals = await this.mealsService.findAll(userIdFromQuery);
+    return meals;
+  }
+
+  @UseGuards(AuthGuard)
   @Get('meals/:id')
   async findOneMeal(
     @Param('id', new ParseUUIDPipe()) id: string,
@@ -69,29 +78,49 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('email')
+  async findUserByEmail(@Query('email') email: string) {
+    if (!email || email.length < 5) {
+      throw new BadRequestException('Caracteres insuficientes para a busca');
+    }
+
+    const user = await this.usersService.findUsersByEmail(email);
+    return user;
+  }
+
+  @UseGuards(AuthGuard)
   @Get('user')
   findOne(@Request() req) {
     return this.usersService.findOne(req.user.sub);
   }
 
   @UseGuards(AuthGuard)
+  @Get(':id')
+  findById(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
+
+
+  @UseGuards(AuthGuard)
   @Patch(':id')
   async update(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ) {
-    return await this.usersService.update(id, updateUserDto);
-  }
-
-  @UseGuards(AuthGuard)
-  @Patch('meals/:id')
-  async updateMeal(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @Body() updateMealDto: UpdateMealDto,
     @Request() req,
   ) {
-    return await this.mealsService.update(id, req.user.sub, updateMealDto);
+    const loggedUserId = req.user.sub;
+    return await this.usersService.update(id, updateUserDto, loggedUserId);
   }
+
+  // @UseGuards(AuthGuard)
+  // @Patch('meals/:id')
+  // async updateMeal(
+  //   @Param('id', new ParseUUIDPipe()) id: string,
+  //   @Body() updateMealDto: UpdateMealDto,
+  //   @Request() req,
+  // ) {
+  //   return await this.mealsService.update(id, req.user.sub, updateMealDto);
+  // }
 
   @UseGuards(AuthGuard)
   @Delete(':id')
@@ -100,15 +129,15 @@ export class UsersController {
     return this.usersService.remove(id);
   }
 
-  @UseGuards(AuthGuard)
-  @Delete('meals/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async removeMeal(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @Request() req,
-  ) {
-    return this.mealsService.remove(id, req.user.sub);
-  }
+  // @UseGuards(AuthGuard)
+  // @Delete('meals/:id')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // async removeMeal(
+  //   @Param('id', new ParseUUIDPipe()) id: string,
+  //   @Request() req,
+  // ) {
+  //   return this.mealsService.remove(id, req.user.sub);
+  // }
 
   @UseGuards(AuthGuard)
   @Post('meals/:mealId/recipe')
